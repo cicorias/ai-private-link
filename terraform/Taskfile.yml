@@ -1,0 +1,64 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  GREETING: Choose a task to run
+
+tasks:
+  default:
+    cmds:
+      - echo "{{.GREETING}}"
+      - task --list
+    silent: true
+
+  init:
+    desc: Initialize terraform
+    summary: |
+      This task will initialize terraform
+    cmds:
+      - rm -f .terraform.lock.hcl
+      - terraform init
+    sources:
+      - providers.tf
+    generates:
+      - .terraform.lock.hcl
+
+  apply:
+    desc: Apply terraform
+    deps:
+      - init
+    sources:
+      - main.tf
+      - variables.tf
+    cmds:
+      - terraform apply -auto-approve
+    generates:
+      - terraform.tfstate
+
+  clean:
+    desc: Clean terraform
+    cmds:
+      - terraform destroy -auto-approve -refresh=false
+      - rm -f .terraform.lock.hcl
+      - rm -f terraform.tfstate
+      - rm -f terraform.tfstate.backup
+
+
+  enablePrivateLink:
+    desc: Enable Private Link on azure
+    cmds:
+      - cmd:  |
+          # Initial check
+          state=$(az feature show --namespace Microsoft.Network --name AllowPrivateEndpoints | jq -r '.properties.state')
+
+          while [ "$state" == "Pending" ]; do
+              echo "State is still Pending. Waiting..."
+              sleep 60  # Wait for 60 seconds
+              state=$(az feature show --namespace Microsoft.Network --name AllowPrivateEndpoints | jq -r '.properties.state')
+          done
+
+          echo "State is no longer Pending. Current state: $state"
+
+          echo "ensure you run 'az provider register --namespace Microsoft.Network' if you have not already done so"
+          echo "use the following to see all pending: 'az feature list --query \"[?properties.state=='Pending'].{FeatureName:name, State:properties.state}\"'"
