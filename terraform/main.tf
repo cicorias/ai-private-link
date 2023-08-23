@@ -9,7 +9,6 @@ resource "azurecaf_name" "main" {
     "azurerm_subnet",
     "azurerm_bastion_host",
     "azurerm_public_ip",
-    # "azurerm_virtual_machine",
     "azurerm_network_interface",
     "azurerm_linux_virtual_machine"
   ]
@@ -130,9 +129,6 @@ resource "azurerm_linux_virtual_machine" "main" {
 
 
 data "cloudinit_config" "main" {
-  #   gzip          = false
-  #   base64_encode = false
-
   part {
     filename     = "cloud-config.yaml"
     content_type = "text/cloud-config"
@@ -149,6 +145,16 @@ data "cloudinit_config" "main" {
 
 }
 
+output "application_insights_instrumentation_key" {
+  sensitive = true
+  value     = azurerm_application_insights.main.connection_string
+}
+
+output "resource_group_name" {
+    value = azurerm_resource_group.main.name
+}
+
+# TODO: unfortunatley my subscription cannot get private endpoints feature enabled yet
 # resource "azurerm_private_endpoint" "app_insights_private_endpoint" {
 #   name                = azurecaf_name.main.results["azurerm_private_endpoint"]
 #   location            = azurerm_resource_group.main.location
@@ -177,11 +183,4 @@ data "cloudinit_config" "main" {
 #   tags = var.tags
 # }
 
-output "application_insights_instrumentation_key" {
-  sensitive = true
-  value     = azurerm_application_insights.main.connection_string
-}
 
-output "resource_group_name" {
-    value = azurerm_resource_group.main.name
-}

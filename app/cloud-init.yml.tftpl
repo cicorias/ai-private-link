@@ -4,20 +4,6 @@
 package_update: true
 packages:
   - curl
-
-# # Writing the script to the instance
-# write_files:
-#   - path: /root/sendAIEvent.sh
-#     content: |
-#       #!/bin/bash
-#       while true; do
-#           # Your logic here, for example:
-#           curl http://example.com
-#           sleep 10
-#       done
-#     permissions: '0755'
-
-# Execute the script
 runcmd:
   - cd /root
   - export AI_INSTRUMENTATION_KEY=${ai_key}

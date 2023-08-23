@@ -85,8 +85,6 @@ jsonPayloadEvent=$(cat <<EOF
 EOF
 )
 
-    # InstrumentationKey=${AI_INSTRUMENTATION_KEY};IngestionEndpoint=https://westus3-1.in.applicationinsights.azure.com/
-
     echo "-----------------"
     echo "Sending to ${AI_ENDPOINT}"
     echo "-----------------"
