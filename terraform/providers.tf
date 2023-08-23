@@ -8,6 +8,7 @@ terraform {
       source  = "aztfmod/azurecaf"
       version = "1.2.26"
     }
+    
   }
 }
 

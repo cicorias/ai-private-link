@@ -36,10 +36,23 @@ tasks:
     generates:
       - terraform.tfstate
 
+
+  vm:
+    cmds:
+      - terraform apply -auto-approve -target azurerm_linux_virtual_machine.main
+
   clean:
     desc: Clean terraform
     cmds:
       - terraform destroy -auto-approve -refresh=false
+      - rm -f .terraform.lock.hcl
+      - rm -f terraform.tfstate
+      - rm -f terraform.tfstate.backup
+
+  kill:
+    desc: force remove resources
+    cmds:
+      - az group delete --name $(terraform output -raw resource_group_name) --yes --no-wait
       - rm -f .terraform.lock.hcl
       - rm -f terraform.tfstate
       - rm -f terraform.tfstate.backup

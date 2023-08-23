@@ -103,7 +103,7 @@ resource "azurerm_network_interface" "main" {
 }
 
 resource "azurerm_linux_virtual_machine" "main" {
-  name                  = azurecaf_name.main.results["azurerm_virtual_machine"]
+  name                  = azurecaf_name.main.results["azurerm_linux_virtual_machine"]
   location              = azurerm_resource_group.main.location
   resource_group_name   = azurerm_resource_group.main.name
   size                  = "Standard_D2_v3"
@@ -123,8 +123,31 @@ resource "azurerm_linux_virtual_machine" "main" {
     sku       = "20_04-lts"
     version   = "latest"
   }
+
+  custom_data = data.cloudinit_config.main.rendered
+
 }
 
+
+data "cloudinit_config" "main" {
+  #   gzip          = false
+  #   base64_encode = false
+
+  part {
+    filename     = "cloud-config.yaml"
+    content_type = "text/cloud-config"
+
+    content = templatefile("${path.module}/../app/cloud-init.yml.tftpl", { ai_key = "${azurerm_application_insights.main.connection_string}"})
+  }
+
+  part {
+    filename     = "sendAIEvent.sh"
+    content_type = "text/x-shellscript"
+
+    content = file("${path.module}/../app/sendAIEvent.sh")
+  }
+
+}
 
 # resource "azurerm_private_endpoint" "app_insights_private_endpoint" {
 #   name                = azurecaf_name.main.results["azurerm_private_endpoint"]
@@ -153,3 +176,12 @@ resource "azurerm_linux_virtual_machine" "main" {
 #   }
 #   tags = var.tags
 # }
+
+output "application_insights_instrumentation_key" {
+  sensitive = true
+  value     = azurerm_application_insights.main.connection_string
+}
+
+output "resource_group_name" {
+    value = azurerm_resource_group.main.name
+}

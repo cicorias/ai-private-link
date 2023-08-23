@@ -1,4 +1,25 @@
 #!/bin/bash
+
+echo "$(dirname $0)"
+AI_CONNECTION_STRING=$1
+if [ -z "$AI_CONNECTION_STRING" ]; then
+    echo "Usage: $0 <AI_CONNECTION_STRING>"
+    exit 1
+fi
+
+
+AI_INSTRUMENTATION_KEY=$(echo "$AI_CONNECTION_STRING" | awk -F';' '{print $1}' | awk -F'=' '{print $2}')
+AI_ENDPOINT=$(echo "$AI_CONNECTION_STRING" | awk -F';' '{print $2}' | awk -F'=' '{print $2}')"v2/track"
+
+if [ -z "$AI_INSTRUMENTATION_KEY" ]; then
+    echo "fail to parse AI_INSTRUMENTATION_KEY from $AI_CONNECTION_STRING"
+    exit 1
+fi
+if [ -z "$AI_ENDPOINT" ]; then
+    echo "fail to parse AI_ENDPOINT from $AI_CONNECTION_STRING"
+    exit 1
+fi
+
 while true; do
     utcTime=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
     # if set to Event -- need to add data.baseData.name: "YourCustomEventName",
