@@ -1,13 +1,52 @@
 # Overview
-Provides a Terraform deployment for Azure illustrating Application Insights from a Private Link 
+Provides a Terraform deployment for Azure illustrating Application Insights.
 
 The intended audience is for internal applications that emit Application Insights telemetry.
+
+>NOTE: the private link part is not enabled as it requires feature enablement.
+
+
+## Parts
+The main parts of this is a Virtual Machine along with a Bastion that uses your local `~/ssh/id_rsa.pub` ssh credentials if they are there - otherwise it fails.
+
+Once deployed, the `cloud-config` runs a script that emits an event and trace every 10 seconds.
+
+The script isis here: [app/sendAIEvent.sh](app/sendAIEvent.sh)
 
 ## Deployment
 While this makes use of Terraform, the tool [Task - aka go-task](https://taskfile.dev/) to help with the commands
 
 ### Requirements
 This has only been tested in a WSL2 environment under Ubuntu 22.04
+- Terraform
+- Task - [Task - aka go-task](https://taskfile.dev/)
+- a ssh key pair as `~/.ssh/id_rsa`
+
+
+### Run Task cli
+
+If you run `task` from the `./terraform` folder you will see what commands are available.
+
+```shell
+Choose a task to run
+task: Available tasks for this project:
+* apply:                   Apply terraform
+* clean:                   Clean terraform
+* enablePrivateLink:       Enable Private Link on azure
+* init:                    Initialize terraform
+* kill:                    force remove resources
+```
+
+#### Essentially
+
+##### `task apply`
+At this point, you can observe Application Insights or Log Analytics Custom Events and Traces -- these are called `traces` and `customevent` in Application Insights tables, but in Log Analytics they are `AppTraces` and `AppCustomEvents`.
+
+##### `task clean`
+This does a proper terraform destroy, clean state and lock files
+
+##### `task kill`
+For the impatient, this will delete the Azure Resource group and clean up terraform state and lock files
 
 ## Network Configuration
 
