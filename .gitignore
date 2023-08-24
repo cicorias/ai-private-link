@@ -36,7 +36,7 @@ terraform.rc
 
 .azure/
 .terraform.lock.hcl
-*/**/.task/checksum/init
+*/**/.task/checksum/
 
 # direnv files
 .envrc
