@@ -29,7 +29,9 @@ tasks:
       - init
     sources:
       - main.tf
+      - vnet.tf
       - variables.tf
+      - kubernetes.tf
     cmds:
       - terraform apply -auto-approve
     generates:
@@ -56,6 +58,12 @@ tasks:
       - rm -f terraform.tfstate
       - rm -f terraform.tfstate.backup
 
+  tidy:
+    desc: Clean up terraform files
+    cmds:
+      - rm -f .terraform.lock.hcl
+      - rm -f terraform.tfstate
+      - rm -f terraform.tfstate.backup
 
   enablePrivateLink:
     desc: Enable Private Link on azure

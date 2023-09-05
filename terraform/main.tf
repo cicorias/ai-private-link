@@ -10,7 +10,10 @@ resource "azurecaf_name" "main" {
     "azurerm_bastion_host",
     "azurerm_public_ip",
     "azurerm_network_interface",
-    "azurerm_linux_virtual_machine"
+    "azurerm_linux_virtual_machine",
+    "azurerm_kubernetes_cluster",
+    "azurerm_container_registry",
+    "azurerm_network_security_group"
   ]
   prefixes      = ["spc"]
   suffixes      = ["dev"]
@@ -24,38 +27,9 @@ resource "azurerm_resource_group" "main" {
   tags     = var.tags
 }
 
-resource "azurerm_virtual_network" "main" {
-  name                = azurecaf_name.main.results["azurerm_virtual_network"]
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-  address_space       = ["10.42.40.0/22"]
-  tags                = var.tags
-}
-
-resource "azurerm_subnet" "subnet_main" {
-  name                 = azurecaf_name.main.results["azurerm_subnet"]
-  resource_group_name  = azurerm_resource_group.main.name
-  virtual_network_name = azurerm_virtual_network.main.name
-  address_prefixes     = ["10.42.40.0/23"]
-}
-
-resource "azurerm_subnet" "bastion" {
-  name                 = "AzureBastionSubnet"
-  resource_group_name  = azurerm_resource_group.main.name
-  virtual_network_name = azurerm_virtual_network.main.name
-  address_prefixes     = ["10.42.42.0/23"]
-}
-
-resource "azurerm_public_ip" "bastion" {
-  name                = azurecaf_name.main.results["azurerm_public_ip"]
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-  sku                 = "Standard"
-  allocation_method   = "Static"
-  tags                = var.tags
-}
 
 resource "azurerm_bastion_host" "main" {
+  count               = var.create_bastion ? 1 : 0
   name                = azurecaf_name.main.results["azurerm_bastion_host"]
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
@@ -66,8 +40,8 @@ resource "azurerm_bastion_host" "main" {
 
   ip_configuration {
     name                 = "BastionHostConfig"
-    subnet_id            = azurerm_subnet.bastion.id
-    public_ip_address_id = azurerm_public_ip.bastion.id
+    subnet_id            = azurerm_subnet.bastion[0].id
+    public_ip_address_id = azurerm_public_ip.bastion[0].id
   }
 }
 
@@ -88,7 +62,6 @@ resource "azurerm_log_analytics_workspace" "main" {
   tags                = var.tags
 }
 
-
 resource "azurerm_network_interface" "main" {
   name                = azurecaf_name.main.results["azurerm_network_interface"]
   location            = azurerm_resource_group.main.location
@@ -107,9 +80,9 @@ resource "azurerm_linux_virtual_machine" "main" {
   resource_group_name   = azurerm_resource_group.main.name
   size                  = "Standard_D2_v3"
   network_interface_ids = [azurerm_network_interface.main.id]
-  admin_username        = "azureuser"
+  admin_username        = var.admin_username
   admin_ssh_key {
-    username   = "azureuser"
+    username   = var.admin_username
     public_key = file("~/.ssh/id_rsa.pub")
   }
   os_disk {
@@ -127,13 +100,12 @@ resource "azurerm_linux_virtual_machine" "main" {
 
 }
 
-
 data "cloudinit_config" "main" {
   part {
     filename     = "cloud-config.yaml"
     content_type = "text/cloud-config"
 
-    content = templatefile("${path.module}/../app/cloud-init.yml.tftpl", { ai_key = "${azurerm_application_insights.main.connection_string}"})
+    content = templatefile("${path.module}/../app/cloud-init.yml.tftpl", { ai_key = "${azurerm_application_insights.main.connection_string}" })
   }
 
   part {
@@ -151,7 +123,7 @@ output "application_insights_instrumentation_key" {
 }
 
 output "resource_group_name" {
-    value = azurerm_resource_group.main.name
+  value = azurerm_resource_group.main.name
 }
 
 # TODO: unfortunatley my subscription cannot get private endpoints feature enabled yet

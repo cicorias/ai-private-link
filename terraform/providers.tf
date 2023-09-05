@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "3.70.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~>3.05"
+    }
     azurecaf = {
       source  = "aztfmod/azurecaf"
       version = "1.2.26"

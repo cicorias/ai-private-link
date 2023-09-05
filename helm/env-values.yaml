@@ -1,0 +1,19 @@
+examplemap:
+  - name: PYTHONDONTWRITEBYTECODE
+    value: "1"
+  - name: DJANGO_DEBUG
+    value: "True"
+  - name: DJANGO_ENVIRONMENT
+    value: production
+  - name: DJANGO_GRAPHQL_UI
+    value: "True"
+  - name: JWT_MIDDLEWARE_ENABLED
+    value: "False"
+  - name: APPLICATIONINSIGHTS_CONNECTION_STRING
+    value: InstrumentationKey=....;IngestionEndpoint=https://REPLACEME.in.applicationinsights.azure.com/
+  - name: OTEL_RESOURCE_ATTRIBUTES
+    value: service.namespace=myapp,service.instance.id=py00010002
+  - name: OTEL_SERVICE_NAME
+    value: myapp
+  - name: OTEL_TRACES_SAMPLER_ARG
+    value: "1.0"
